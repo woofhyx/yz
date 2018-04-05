@@ -23,17 +23,21 @@ def makeParamsFromSchool(school):
     name = school[1]
     sscode = school[2]
     params = {'ssdm': sscode, 'dwmc' : name, 'school_id':id}
-    return makeParams(params) 
+    return makeParams(params)
 
-# 由传入专业参数，生成查询考试范围的参数 
+# 由传入专业参数，生成查询考试范围的参数
 def makeParamsFromProfession(profession):
     data = {}
-    professionid = profession[1] + profession[3] + profession[5] + profession[7]
+#    professionid = profession[1] + profession[3] + profession[5] + profession[7]
+#    全日制与非全日制分为两个专业
+    professionid = profession[0]
     id = profession[12]
     dwmc = '(' + profession[1] + ')' + profession[2]
     yxsmc = '(' + profession[3] + ')' + profession[4]
     zymc = '(' + profession[5] + ')' + profession[6]
     yjfxmc = '(' + profession[7] + ')' + profession[8]
+    host = 'http://yz.chsi.com.cn'
+    href = host + profession[13]
 
     data['professionid'] = professionid
     data['id'] = id
@@ -41,6 +45,7 @@ def makeParamsFromProfession(profession):
     data['yxsmc'] = yxsmc
     data['zymc'] = zymc
     data['yjfxmc'] = yjfxmc
+    data['href'] = href
 
     return data
 
@@ -67,21 +72,20 @@ def cSchoolpProfession():
 
             #addjson('profession.json', professions)
             writeProfession(professions)
-            #print('end')
 
         except sqlite3.IntegrityError as e:
             print('inserted: ' + school[1])
             continue
         except requests.exceptions.RequestException as e:
             # 发生异常, 已加入errorschool
-            print('error ' + school[1])
+            print('error :' + school[1])
             errorschool.append(school)
-        except:
-            print('other error')
+        except Exception as e:
+            print('Exception :' + str(e))
             errorschool.append(school)
 
 
-        
+
 # 生产学校信息
 def pSchool(c):
     c.send(None)
@@ -97,7 +101,7 @@ def pSchool(c):
 
         print('')
         i = i +1
-    
+
     global errorschool
 
     while errorschool :
@@ -121,7 +125,7 @@ def pSchool(c):
 
 # 分批获取数据，并写入
 def cProfessionpExaminations():
-    professiontotal = pageingQueryProfession() 
+    professiontotal = pageingQueryProfession()
     i = 0
     k = 0
     n = 0
@@ -130,10 +134,9 @@ def cProfessionpExaminations():
         #pool.map(cProfessionpExaminations, professions)
         pool = ThreadPool(10)
         result = pool.map(getExaminationsByProfession, professions)
-        
+
         pool.close()
         pool.join()
-
 
         exams = []
         for resultitem in result:
@@ -154,12 +157,12 @@ def getExaminationsByProfession(profession):
     params = makeParamsFromProfession(profession)
     exams = []
     try:
-        #print(params)
         exams = getExaminations(params)
     except requests.exceptions.RequestException as e:
         print(e)
         pass
-    except:
+    except Exception as e:
+        print(e)
         pass
     return exams
 
@@ -179,7 +182,6 @@ def initSs():
 
 def initSchool():
     schools = getSchool()
-    #print(schools)
     try:
         writeSchool(schools)
     except sqlite3.IntegrityError as e:
@@ -188,20 +190,19 @@ def initSchool():
 # --- main ---
 
 if __name__ == '__main__':
-   
+
     #initSs()
     print('write Ss')
 
     initSchool()
-    print('write school')
-    
+
     # 获取专业信息，并写入数据库
     c = cSchoolpProfession()
     pSchool(c)
     print('write profession')
 
 
-    # 获取考试范围信息, 并写入数据库 
+    # 获取考试范围信息, 并写入数据库
     cProfessionpExaminations()
     print('write examinations')
 

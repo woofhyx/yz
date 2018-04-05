@@ -1,6 +1,9 @@
+#基于 [yz](https://github.com/manesol/yz/)修改
+获取2019年考研信息
+
 # yz
-研招网（ http://yz.chsi.com.cn/ ） **2017**考研数据，  
-包括：学校，专业，考试范围  
+研招网（ http://yz.chsi.com.cn/ ） **2019**考研数据，  
+包括：学校，专业，考试范围
 
 ## 数据格式：
 参考yz.sql
@@ -38,6 +41,7 @@ create table school_profession(
     profession_name text not null, -- 专业名称
     research_direction_code text not null, -- 研究方向代码
     research_direction_name text not null, -- 研究方向名称
+    full_time text , -- 全日制
     teacher text , -- 指导老师
     num_total text not null, -- 拟招生总人数
     num_among text, -- 拟招生中推免人数

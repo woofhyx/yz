@@ -6,7 +6,7 @@ import json
 dbfilename = 'yz.db'
 
 insertschool = 'insert into school values (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-inserts_p = 'insert into school_profession values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+inserts_p = 'insert into school_profession values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 insertp_e = 'insert into profession_examinations values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 insertss = 'insert into ss values(?, ?)'
 tabmap = {'school': insertschool, 'school_profession': inserts_p, 'profession_examinations': insertp_e, 'ss': insertss}
@@ -30,14 +30,12 @@ def writedbitem(tablename, data):
             i = i + 1
             #errordata.append(row)
             print(e)
-            #print(row)
             #raise e
             #continue
             pass
 
     conn.commit()
     conn.close()
-    #print(i)
 
 
 
@@ -52,6 +50,7 @@ def writedb(tablename, data):
         cursor.executemany(sql, data)
     except sqlite3.IntegrityError as e:
         conn.rollback()
+        print (e)
         raise e
     finally:
         conn.commit()
@@ -90,8 +89,8 @@ def selectnotProfession():
 
 oncenum = 500
 
-''' 
-因为数据量太大，179155条， 
+'''
+因为数据量太大，179155条，
 所以，分批返回数据, 每批数据oncenum条
 '''
 
@@ -103,11 +102,10 @@ def pageingQueryProfession():
         sql = 'select * from school_profession where id not in (select profession_id from profession_examinations) limit 0,' + str(oncenum)
         cursor.execute(sql)
         results = cursor.fetchall()
-        #print(results)
         if not results:
-            return 
+            return
         yield results
-    
+
 
 
 '''
